@@ -1,0 +1,34 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+import pycountry_convert as pc
+import warnings
+warnings.filterwarnings('ignore')
+df = pd.read_csv("./FPData2.csv")
+df.columns = ['Country', 'year', 'ladder', 'gdp', 'support', 'life_expec', 'freedom', 'generosity','corruption','positive', 'negative']
+y = df.groupby('Country').count()
+less = y[y['year'] <= 10].index.tolist()
+df_update = df[~df['Country'].isin(less)]
+year_list = range(2011, 2020)
+df_11 = df_update[df_update['year'].isin(year_list)]
+y1 = df_11.groupby('Country').count()
+less1 = y1[y1['year'] <= 8].index.tolist()
+df_update1 = df_11[~df_11['Country'].isin(less1)]
+df_update2 = df_update1.dropna()
+
+def continent(name):
+    part1 = pc.country_name_to_country_alpha2(name)
+    code = pc.country_alpha2_to_continent_code(part1)
+    continent = pc.convert_continent_code_to_continent_name(code)
+    return continent
+df_update2['Country'] = df_update2['Country'].replace({'Congo (Brazzaville)':'Congo'})
+df_update2['Country'] = df_update2['Country'].replace({'Turkiye':'Turkey'})
+df_update2['Continent'] = df_update2.apply(lambda row: continent(row.Country), axis=1)
+def cont_val(continent):
+    continents = ['Asia', 'Africa', 'North America', 'South America', 'Oceania', 'Europe']
+    return continents.index(continent)
+df_update2['Continent'] = df_update2.apply(lambda row: cont_val(row.Continent), axis=1)
+df_update2
